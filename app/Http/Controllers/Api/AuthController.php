@@ -39,7 +39,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response(['message' => 'Logged out'], 200);
+        return response(['message' => 'Log out Success'], 200);
     }
 
     //update image profile & face_embedding
