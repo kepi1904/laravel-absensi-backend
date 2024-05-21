@@ -1,56 +1,89 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    //index
+    public function index()
     {
-        //get data users
-        $users = DB::table('users')
-            ->when($request->input('name'), function ($query, $name) {
-                return $query->where('name', 'like', '%' . $name . '%');
-            })
+        //search by name, pagination 10
+        $users = User::where('name', 'like', '%' . request('name') . '%')
             ->orderBy('id', 'desc')
             ->paginate(10);
         return view('user.index', compact('users'));
     }
 
+    //create
     public function create()
     {
         return view('user.create');
     }
 
-    public function store(StoreUserRequest $request)
+    //store
+    public function store(Request $request)
     {
-        $data = $request->all();
-        $data['password'] = Hash::make($request->password);
-        \App\Models\User::create($data);
-        return redirect()->route('user.index')->with('success', 'User successfully created');
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8',
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'roles' => $request->role,
+            'password' => Hash::make($request->password),
+            'position' => $request->position,
+            'department' => $request->department,
+        ]);
+
+        return redirect()->route('user.index')->with('success', 'User created successfully');
     }
-    public function edit($id)
+
+    //edit
+    public function edit(User $user)
     {
-        $user = \App\Models\User::findOrFail($id);
         return view('user.edit', compact('user'));
     }
 
-    public function update(UpdateUserRequest $request, User $user)
+    //update
+    public function update(Request $request, User $user)
     {
-        $data = $request->validated();
-        $user->update($data);
-        return redirect()->route('user.index')->with('success', 'User successfully updated');
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'roles' => $request->role,
+            'position' => $request->position,
+            'department' => $request->department,
+        ]);
+
+        //if password filled
+        if ($request->password) {
+            $user->update([
+                'password' => Hash::make($request->password),
+            ]);
+        }
+
+        return redirect()->route('user.index')->with('success', 'User updated successfully');
     }
 
+    //destroy
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('user.index')->with('success', 'User successfully deleted');
+        return redirect()->route('user.index')->with('success', 'User deleted successfully');
     }
 }

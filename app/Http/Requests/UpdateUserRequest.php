@@ -28,6 +28,9 @@ class UpdateUserRequest extends FormRequest
             'roles' => 'required|in:ADMIN,STAFF,USER',
             'position' => 'required|max:100|min:3',
             'department' => 'required|max:100|min:3',
+            // 'face_embedding' => 'required|max:10000|min:3',
+            // 'image_url' => 'required|max:5000|min:3',
+            // 'fcm_token' => 'required|max:5000|min:3',
 
         ];
     }
